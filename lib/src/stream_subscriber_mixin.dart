@@ -18,6 +18,10 @@ abstract class StreamSubscriberMixin<T> {
     }
   }
 
+  void handleSubscription(StreamSubscription<T> subscription) {
+    _subscriptions.add(subscription);
+  }
+
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
     _subscriptions
