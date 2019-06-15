@@ -8,6 +8,7 @@ part of flutter_async_utils;
 
 /// Mixin for classes that own `StreamSubscription`s and expose an API for
 /// disposing of themselves by cancelling the subscriptions
+@optionalTypeArgs
 abstract class StreamSubscriberMixin<T> {
   List<StreamSubscription<T>> _subscriptions = <StreamSubscription<T>>[];
 
@@ -27,5 +28,17 @@ abstract class StreamSubscriberMixin<T> {
     _subscriptions
         .forEach((StreamSubscription<T> subscription) => subscription.cancel());
     _subscriptions.clear();
+  }
+}
+
+@optionalTypeArgs
+abstract class StreamSubscriberMixinState<ST extends StatefulWidget>
+    extends State<ST> with StreamSubscriberMixin {
+  @mustCallSuper
+  @protected
+  @override
+  void dispose() {
+    cancelSubscriptions();
+    super.dispose();
   }
 }
