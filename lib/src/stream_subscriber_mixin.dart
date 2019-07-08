@@ -33,7 +33,7 @@ abstract class StreamSubscriberMixin<T> {
 
 @optionalTypeArgs
 abstract class StreamSubscriberMixinState<ST extends StatefulWidget>
-    extends State<ST> with StreamSubscriberMixin {
+    extends Object with StreamSubscriberMixin implements State<ST> {
   @mustCallSuper
   @protected
   @override
