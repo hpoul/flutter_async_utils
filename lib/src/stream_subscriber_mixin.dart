@@ -9,31 +9,27 @@ part of flutter_async_utils;
 /// Mixin for classes that own `StreamSubscription`s and expose an API for
 /// disposing of themselves by cancelling the subscriptions
 @optionalTypeArgs
-abstract class StreamSubscriberMixin<T> {
-  List<StreamSubscription<T>> _subscriptions = <StreamSubscription<T>>[];
+mixin StreamSubscriberMixin<T> on State<T> {
+  List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
-  void listen(Stream<T> stream, void onData(T data), {Function onError}) {
+  void listen(Stream<dynamic> stream, void onData(dynamic data), {Function onError}) {
     if (stream != null) {
       _subscriptions.add(stream.listen(onData, onError: onError));
     }
   }
 
-  void handleSubscription(StreamSubscription<T> subscription) {
+  void handleSubscription(StreamSubscription<dynamic> subscription) {
     _subscriptions.add(subscription);
   }
 
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
     _subscriptions
-        .forEach((StreamSubscription<T> subscription) => subscription.cancel());
+        .forEach((StreamSubscription<dynamic> subscription) => subscription.cancel());
     _subscriptions.clear();
   }
-}
 
-@optionalTypeArgs
-abstract class StreamSubscriberMixinState<ST extends StatefulWidget>
-    extends Object with StreamSubscriberMixin implements State<ST> {
   @mustCallSuper
   @protected
   @override
