@@ -9,7 +9,7 @@ part of flutter_async_utils;
 /// Mixin for classes that own `StreamSubscription`s and expose an API for
 /// disposing of themselves by cancelling the subscriptions
 @optionalTypeArgs
-mixin StreamSubscriberMixin<T> on State<T> {
+mixin StreamSubscriberMixin<T extends StatefulWidget> on State<T> {
   List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
