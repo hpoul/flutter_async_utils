@@ -6,10 +6,9 @@
 
 part of flutter_async_utils;
 
-/// Mixin for classes that own `StreamSubscription`s and expose an API for
-/// disposing of themselves by cancelling the subscriptions
-@optionalTypeArgs
-mixin StreamSubscriberMixin<T extends StatefulWidget> on State<T> {
+/// Base class which can be used as a mixin directly, but you have to call `cancelSubscriptions`.
+/// If used inside a [State], use [StreamSubscriberMixin].
+mixin StreamSubscriberBase {
   List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
@@ -19,22 +18,36 @@ mixin StreamSubscriberMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  void handleSubscription(StreamSubscription<dynamic> subscription) {
+  void handle(StreamSubscription<dynamic> subscription) {
     _subscriptions.add(subscription);
   }
 
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
-    _subscriptions
-        .forEach((StreamSubscription<dynamic> subscription) => subscription.cancel());
+    _subscriptions.forEach((StreamSubscription<dynamic> subscription) => subscription.cancel());
     _subscriptions.clear();
   }
+}
+
+class StreamSubscriptions with StreamSubscriberBase {}
+
+/// Mixin for [State] classes that own `StreamSubscription`. It will automatically call
+/// [cancelSubscriptions] on [dispose].
+///
+/// Either use [handleSubscriptions] or directly `subscriptions.handle(...)`. to register stream subscriptions.
+@optionalTypeArgs
+mixin StreamSubscriberMixin<T extends StatefulWidget> on State<T> {
+  final StreamSubscriptions _subscriptions = StreamSubscriptions();
+
+  StreamSubscriptions get subscriptions => _subscriptions;
+
+  void handleSubscription(StreamSubscription<dynamic> subscription) => _subscriptions.handle(subscription);
 
   @mustCallSuper
   @protected
   @override
   void dispose() {
-    cancelSubscriptions();
+    _subscriptions.cancelSubscriptions();
     super.dispose();
   }
 }
