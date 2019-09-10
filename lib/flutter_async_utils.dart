@@ -5,4 +5,5 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-part 'src/stream_subscriber_mixin.dart';
+export 'src/stream_subscriber_mixin.dart';
+export 'src/future_task_state_mixin.dart';
