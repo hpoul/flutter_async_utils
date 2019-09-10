@@ -4,6 +4,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
 /// Base class which can be used as a mixin directly, but you have to call `cancelSubscriptions`.
 /// If used inside a [State], use [StreamSubscriberMixin].
 mixin StreamSubscriberBase {
