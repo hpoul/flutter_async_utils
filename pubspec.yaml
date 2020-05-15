@@ -5,7 +5,7 @@ version: 0.0.1
 homepage: https://github.com/hpoul/flutter_async_utils
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -15,5 +15,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  pedantic: ^1.9.0
 
 flutter:

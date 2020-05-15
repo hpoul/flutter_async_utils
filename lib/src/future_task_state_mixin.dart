@@ -129,6 +129,9 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     final future = taskRunner(proxy);
     proxy._futureTask = FutureTask(
         future: future, progressLabel: proxy._progressLabel ?? label);
+    proxy._futureTask.addListener(() {
+      setState(() {});
+    });
     setState(() {
       task = proxy._futureTask;
     });

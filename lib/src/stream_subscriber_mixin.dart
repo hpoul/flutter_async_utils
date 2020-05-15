@@ -12,10 +12,12 @@ import 'package:flutter/widgets.dart';
 /// Base class which can be used as a mixin directly, but you have to call `cancelSubscriptions`.
 /// If used inside a [State], use [StreamSubscriberMixin].
 mixin StreamSubscriberBase {
-  List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
+  final List<StreamSubscription<dynamic>> _subscriptions =
+      <StreamSubscription<dynamic>>[];
 
   /// Listens to a stream and saves it to the list of subscriptions.
-  void listen(Stream<dynamic> stream, void onData(dynamic data), {Function onError}) {
+  void listen(Stream<dynamic> stream, void onData(dynamic data),
+      {Function onError}) {
     if (stream != null) {
       _subscriptions.add(stream.listen(onData, onError: onError));
     }
@@ -27,7 +29,9 @@ mixin StreamSubscriberBase {
 
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
-    _subscriptions.forEach((StreamSubscription<dynamic> subscription) => subscription.cancel());
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
     _subscriptions.clear();
   }
 }
@@ -44,7 +48,8 @@ mixin StreamSubscriberMixin<T extends StatefulWidget> on State<T> {
 
   StreamSubscriptions get subscriptions => _subscriptions;
 
-  void handleSubscription(StreamSubscription<dynamic> subscription) => _subscriptions.handle(subscription);
+  void handleSubscription(StreamSubscription<dynamic> subscription) =>
+      _subscriptions.handle(subscription);
 
   @mustCallSuper
   @protected
