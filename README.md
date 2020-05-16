@@ -1,6 +1,6 @@
 # flutter_async_utils
 
-A few utils to make working with Streams and Futures easier.
+A few utils to make working with Streams and Futures easier. See the running example at: https://hpoul.github.io/flutter_async_utils/ ([example/lib/main.dart](./example/lib/main.dart))
 
 ## StreamSubscriberMixin
 
