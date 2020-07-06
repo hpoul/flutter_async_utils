@@ -27,6 +27,11 @@ mixin TaskStateMixin<T extends StatefulWidget> on State<T> {
       task = future;
     });
     future.whenComplete(() {
+      if (!mounted) {
+        _logger.warning('Task finished after widget was no '
+            'longer mounted.');
+        return;
+      }
       setState(() {
         task = null;
       });
@@ -44,8 +49,8 @@ class FutureTask with ChangeNotifier implements ValueListenable<FutureTask> {
   String _progressLabel;
   set progressLabel(String progressLabel) {
     _progressLabel = progressLabel;
-    _logger.fine(
-        'Progress Label chaned to $progressLabel (hasListeners: $hasListeners)');
+    _logger.fine('Progress Label changed to $progressLabel '
+        '(hasListeners: $hasListeners)');
     notifyListeners();
   }
 
@@ -117,7 +122,7 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
       // we have to queue task.
       final taskProgressLabel = task.progressLabel;
       _logger.finer(
-          'A task is aready running ($taskProgressLabel). queing ($label)');
+          'A task is already running ($taskProgressLabel). queuing ($label)');
       final completer = Completer<U>();
       _taskQueue.add(() {
         completer.complete(asyncRunTask(taskRunner, label: label));
@@ -130,6 +135,11 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     proxy._futureTask = FutureTask(
         future: future, progressLabel: proxy._progressLabel ?? label);
     proxy._futureTask.addListener(() {
+      if (!mounted) {
+        _logger.warning('Task finished after widget was no '
+            'longer mounted. ${proxy._progressLabel}');
+        return;
+      }
       setState(() {});
     });
     setState(() {
@@ -141,14 +151,19 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
       return Future<U>.error(error, stackTrace);
     });
     future.whenComplete(() {
-      setState(() {
-        task = null;
-        _logger.fine('Task $label completed. ${_taskQueue.length} queued'
-            ' tasks remaining.');
-        if (_taskQueue.isNotEmpty) {
-          _taskQueue.removeFirst()();
-        }
-      });
+      _logger.fine('Task $label completed. ${_taskQueue.length} queued'
+          ' tasks remaining.');
+      if (mounted) {
+        setState(() {
+          task = null;
+        });
+      } else {
+        _logger.warning('Task finished after widget was no '
+            'longer mounted. ${proxy._progressLabel}');
+      }
+      if (_taskQueue.isNotEmpty) {
+        _taskQueue.removeFirst()();
+      }
     });
     return future;
   }

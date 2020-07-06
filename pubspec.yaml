@@ -1,7 +1,7 @@
 name: flutter_async_utils
 description: Utilities for dealing with stream subscriptions and asynchronous
   tasks in flutter widgets.
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/hpoul/flutter_async_utils
 
 environment:
