@@ -8,10 +8,10 @@ import 'package:logging/logging.dart';
 final _logger = Logger('future_task_state_mixin');
 
 mixin TaskStateMixin<T extends StatefulWidget> on State<T> {
-  Future<dynamic> task;
+  Future<dynamic>? task;
 
   @protected
-  VoidCallback asyncTaskCallback<U>(Future<U> Function() callback) {
+  VoidCallback? asyncTaskCallback<U>(Future<U> Function() callback) {
     if (task != null) {
       return null;
     }
@@ -41,33 +41,33 @@ mixin TaskStateMixin<T extends StatefulWidget> on State<T> {
 }
 
 class FutureTask with ChangeNotifier implements ValueListenable<FutureTask> {
-  FutureTask({@required this.future, String progressLabel})
+  FutureTask({required this.future, String? progressLabel})
       : _progressLabel = progressLabel {
     _logger.info('Initialized task with $progressLabel');
   }
   final Future<dynamic> future;
-  String _progressLabel;
-  set progressLabel(String progressLabel) {
+  String? _progressLabel;
+  set progressLabel(String? progressLabel) {
     _progressLabel = progressLabel;
     _logger.fine('Progress Label changed to $progressLabel '
         '(hasListeners: $hasListeners)');
     notifyListeners();
   }
 
-  String get progressLabel => _progressLabel;
+  String? get progressLabel => _progressLabel;
 
   @override
   FutureTask get value => this;
 }
 
 class _TaskProgressProxy implements TaskProgress {
-  FutureTask _futureTask;
-  String _progressLabel;
+  late FutureTask _futureTask;
+  String? _progressLabel;
 
   @override
   set progressLabel(String progressLabel) {
     _progressLabel = progressLabel;
-    _futureTask?.progressLabel = progressLabel;
+    _futureTask.progressLabel = progressLabel;
     _logger.fine('proxy: label changed to $progressLabel ($_futureTask)');
   }
 }
@@ -100,11 +100,11 @@ class ErrorDetails {
 /// show a label of the current state of the running task.
 mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
   static ShowErrorDialog defaultShowErrorDialog = (_) {};
-  FutureTask task;
+  FutureTask? task;
   final Queue<VoidCallback> _taskQueue = Queue<VoidCallback>();
 
   @protected
-  VoidCallback asyncTaskCallback<U>(
+  VoidCallback? asyncTaskCallback<U>(
       Future<U> Function(TaskProgress progress) progress) {
     if (task != null) {
       return null;
@@ -117,10 +117,11 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
   @protected
   Future<U> asyncRunTask<U>(
       Future<U> Function(TaskProgress progress) taskRunner,
-      {String label}) {
-    if (task != null) {
+      {String? label}) {
+    final myTask = task;
+    if (myTask != null) {
       // we have to queue task.
-      final taskProgressLabel = task.progressLabel;
+      final taskProgressLabel = myTask.progressLabel;
       _logger.finer(
           'A task is already running ($taskProgressLabel). queuing ($label)');
       final completer = Completer<U>();
@@ -145,7 +146,7 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     setState(() {
       task = proxy._futureTask;
     });
-    future.catchError((dynamic error, StackTrace stackTrace) {
+    future.catchError((Object error, StackTrace stackTrace) {
       showErrorDialog(ErrorDetails(
           context, 'Error while ${label ?? 'running task'}', '$error', error));
       return Future<U>.error(error, stackTrace);
@@ -170,4 +171,16 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
 
   @protected
   ShowErrorDialog get showErrorDialog => defaultShowErrorDialog;
+}
+
+extension FutureTaskStateMixinEx on FutureTaskStateMixin {
+  /// Executes the given [cb] and returns it's value if there is a running task.
+  /// If no task is running, returns null.
+  T? withTask<T>(T Function(FutureTask task) cb) {
+    final task = this.task;
+    if (task != null) {
+      return cb(task);
+    }
+    return null;
+  }
 }

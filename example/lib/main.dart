@@ -32,8 +32,7 @@ class _MyAppState extends State<MyApp> with FutureTaskStateMixin {
             children: <Widget>[
               const SizedBox(height: 160),
               const Text('Example App ;-)\n'),
-              RaisedButton(
-                child: const Text('Tap me.'),
+              ElevatedButton(
                 onPressed: asyncTaskCallback((progress) async {
                   await _wait(1);
                   progress.progressLabel = 'Doing more work';
@@ -41,13 +40,12 @@ class _MyAppState extends State<MyApp> with FutureTaskStateMixin {
                   progress.progressLabel = 'And even more.';
                   await _wait(3);
                 }),
+                child: const Text('Tap me.'),
               ),
-              ...?task == null
-                  ? null
-                  : [
-                      const CircularProgressIndicator(),
-                      Text(task.progressLabel ?? ''),
-                    ],
+              ...?withTask((task) => [
+                    const CircularProgressIndicator(),
+                    Text(task.progressLabel ?? ''),
+                  ]),
             ],
           ),
         ),
