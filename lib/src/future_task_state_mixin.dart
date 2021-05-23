@@ -117,7 +117,7 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
   @protected
   Future<U> asyncRunTask<U>(
       Future<U> Function(TaskProgress progress) taskRunner,
-      {String? label}) {
+      {String? label}) async {
     final myTask = task;
     if (myTask != null) {
       // we have to queue task.
@@ -132,9 +132,11 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     }
     _logger.finer('Running task $label');
     final proxy = _TaskProgressProxy();
-    final future = taskRunner(proxy);
+    final completer = Completer<U>();
     proxy._futureTask = FutureTask(
-        future: future, progressLabel: proxy._progressLabel ?? label);
+      future: completer.future,
+      progressLabel: proxy._progressLabel ?? label,
+    );
     proxy._futureTask.addListener(() {
       if (!mounted) {
         _logger.warning('Task finished after widget was no '
@@ -146,12 +148,16 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     setState(() {
       task = proxy._futureTask;
     });
-    future.catchError((Object error, StackTrace stackTrace) {
+    try {
+      final ret = await taskRunner(proxy);
+      completer.complete(ret);
+      return ret;
+    } catch (error, stackTrace) {
       showErrorDialog(ErrorDetails(
           context, 'Error while ${label ?? 'running task'}', '$error', error));
-      return Future<U>.error(error, stackTrace);
-    });
-    future.whenComplete(() {
+      completer.completeError(error, stackTrace);
+      rethrow;
+    } finally {
       _logger.fine('Task $label completed. ${_taskQueue.length} queued'
           ' tasks remaining.');
       if (mounted) {
@@ -165,8 +171,7 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
       if (_taskQueue.isNotEmpty) {
         _taskQueue.removeFirst()();
       }
-    });
-    return future;
+    }
   }
 
   @protected
