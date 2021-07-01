@@ -1,3 +1,7 @@
+## 1.0.0
+
+* "stable" nullsafety release.
+
 ## 1.0.0-nullsafety.2
 
 * Nullsafety migration.
