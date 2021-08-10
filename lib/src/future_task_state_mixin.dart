@@ -153,6 +153,14 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
       completer.complete(ret);
       return ret;
     } catch (error, stackTrace) {
+      if (!mounted) {
+        _logger.warning(
+            'Error occurred while running task, but widget was no longer '
+            'mounted, so error is not displayed to user.',
+            error,
+            stackTrace);
+        rethrow;
+      }
       showErrorDialog(ErrorDetails(
           context, 'Error while ${label ?? 'running task'}', '$error', error));
       completer.completeError(error, stackTrace);

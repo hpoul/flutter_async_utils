@@ -1,3 +1,7 @@
+## 1.0.0+1
+
+* Make sure widget is mounted before showing error dialog. Fixes null exception.
+
 ## 1.0.0
 
 * "stable" nullsafety release.
