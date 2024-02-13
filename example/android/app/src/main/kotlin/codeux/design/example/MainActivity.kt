@@ -1,4 +1,4 @@
-package codeux.design.flutter_async_utils_example
+package codeux.design.example
 
 import io.flutter.embedding.android.FlutterActivity
 
