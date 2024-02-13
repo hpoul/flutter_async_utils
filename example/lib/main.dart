@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_async_utils/flutter_async_utils.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 Future<void> _wait(int seconds) async {
@@ -24,7 +26,7 @@ class _MyAppState extends State<MyApp> with FutureTaskStateMixin {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           child: Column(
             mainAxisSize: MainAxisSize.min,
