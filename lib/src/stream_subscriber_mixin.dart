@@ -6,7 +6,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// Base class which can be used as a mixin directly, but you have to call `cancelSubscriptions`.

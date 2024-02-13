@@ -1,3 +1,8 @@
+## 1.1.0
+
+* Refactor `FutureTaskStateMixin` into `FutureTaskManager` which can be used
+    without a `State` (e.g. using `flutter_hooks`).
+
 ## 1.0.0+1
 
 * Make sure widget is mounted before showing error dialog. Fixes null exception.

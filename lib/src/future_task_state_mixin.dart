@@ -81,8 +81,7 @@ typedef ShowErrorDialog = void Function(
 );
 
 class ErrorDetails {
-  ErrorDetails(this.context, this.title, this.message, this.error);
-  final BuildContext context;
+  ErrorDetails(this.title, this.message, this.error);
   final String title;
   final String message;
   final dynamic error;
@@ -99,11 +98,48 @@ class ErrorDetails {
 /// You can then use the [task] attribute to show Progress or even
 /// show a label of the current state of the running task.
 mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
-  static ShowErrorDialog defaultShowErrorDialog = (_) {};
+  static ShowErrorDialog defaultShowErrorDialog = (__) {};
+
+  FutureTask? get task => _futureTaskManager.task;
+
+  late final FutureTaskManager _futureTaskManager = FutureTaskManager(
+      onChanged: (task) {
+        if (!mounted) {
+          if (task == null) {
+            _logger.warning('Task finished after widget was no '
+                'longer mounted.');
+          } else {
+            _logger.warning('Task finished after widget was no '
+                'longer mounted. ${task.progressLabel}');
+          }
+          return;
+        }
+        setState(() {});
+      },
+      showErrorDialog: showErrorDialog);
+
+  @protected
+  VoidCallback? asyncTaskCallback<U>(
+          Future<U> Function(TaskProgress progress) progress) =>
+      _futureTaskManager.asyncTaskCallback(progress);
+
+  @protected
+  Future<U> asyncRunTask<U>(
+          Future<U> Function(TaskProgress progress) taskRunner,
+          {String? label}) =>
+      _futureTaskManager.asyncRunTask(taskRunner, label: label);
+
+  ShowErrorDialog get showErrorDialog => defaultShowErrorDialog;
+}
+
+class FutureTaskManager {
+  FutureTaskManager({required this.showErrorDialog, required this.onChanged});
+
+  final ShowErrorDialog showErrorDialog;
+  final void Function(FutureTask? task) onChanged;
   FutureTask? task;
   final Queue<VoidCallback> _taskQueue = Queue<VoidCallback>();
 
-  @protected
   VoidCallback? asyncTaskCallback<U>(
       Future<U> Function(TaskProgress progress) progress) {
     if (task != null) {
@@ -114,7 +150,6 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
     };
   }
 
-  @protected
   Future<U> asyncRunTask<U>(
       Future<U> Function(TaskProgress progress) taskRunner,
       {String? label}) async {
@@ -138,59 +173,36 @@ mixin FutureTaskStateMixin<T extends StatefulWidget> on State<T> {
       progressLabel: proxy._progressLabel ?? label,
     );
     proxy._futureTask.addListener(() {
-      if (!mounted) {
-        _logger.warning('Task finished after widget was no '
-            'longer mounted. ${proxy._progressLabel}');
-        return;
-      }
-      setState(() {});
+      onChanged(proxy._futureTask);
     });
-    setState(() {
-      task = proxy._futureTask;
-    });
+    task = proxy._futureTask;
+    onChanged(proxy._futureTask);
     try {
       final ret = await taskRunner(proxy);
       completer.complete(ret);
       return ret;
     } catch (error, stackTrace) {
-      if (!mounted) {
-        _logger.warning(
-            'Error occurred while running task, but widget was no longer '
-            'mounted, so error is not displayed to user.',
-            error,
-            stackTrace);
-        rethrow;
-      }
       showErrorDialog(ErrorDetails(
-          context, 'Error while ${label ?? 'running task'}', '$error', error));
+          'Error while ${label ?? 'running task'}', '$error', error));
       completer.completeError(error, stackTrace);
       rethrow;
     } finally {
       _logger.fine('Task $label completed. ${_taskQueue.length} queued'
           ' tasks remaining.');
-      if (mounted) {
-        setState(() {
-          task = null;
-        });
-      } else {
-        _logger.warning('Task finished after widget was no '
-            'longer mounted. ${proxy._progressLabel}');
-      }
+      task = null;
+      onChanged(task);
       if (_taskQueue.isNotEmpty) {
         _taskQueue.removeFirst()();
       }
     }
   }
-
-  @protected
-  ShowErrorDialog get showErrorDialog => defaultShowErrorDialog;
 }
 
 extension FutureTaskStateMixinEx on FutureTaskStateMixin {
   /// Executes the given [cb] and returns it's value if there is a running task.
   /// If no task is running, returns null.
   T? withTask<T>(T Function(FutureTask task) cb) {
-    final task = this.task;
+    final task = _futureTaskManager.task;
     if (task != null) {
       return cb(task);
     }
