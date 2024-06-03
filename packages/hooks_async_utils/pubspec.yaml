@@ -1,7 +1,8 @@
 name: hooks_async_utils
 description: Hook based async task util.
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/hpoul/flutter_async_utils
+homepage: https://github.com/hpoul/flutter_async_utils/tree/master/packages/hooks_async_utils
 
 environment:
   sdk: ^3.4.1
