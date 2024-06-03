@@ -18,14 +18,15 @@ jobs:
 
       - name: Install
         run: |
+          cd packages/flutter_async_utils
           flutter pub get
       - name: Build
-        run: cd example && flutter build web
+        run: packages/flutter_async_utils/example && flutter build web
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./example/build/web
+          publish_dir: ./packages/flutter_async_utils/example/build/web
           allow_empty_commit: true
 
