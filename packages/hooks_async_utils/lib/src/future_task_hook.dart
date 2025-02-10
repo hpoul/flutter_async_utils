@@ -14,6 +14,9 @@ abstract class AsyncTaskHook {
   static OnError defaultShowErrorDialog = (context, error) {};
   VoidCallback? asyncTaskCallback<U>(
       Future<U> Function(TaskProgress progress) progress);
+  Future<U> asyncRunTask<U>(
+      Future<U> Function(TaskProgress progress) taskRunner,
+      {String? label});
   FutureTask? get task;
 
   OnError? get onError;
@@ -56,10 +59,11 @@ class _AsyncTaskHookState extends HookState<AsyncTaskHook, _AsyncTaskHook>
     return _manager.asyncTaskCallback(progress);
   }
 
+  @override
   Future<U> asyncRunTask<U>(
           Future<U> Function(TaskProgress progress) taskRunner,
           {String? label}) =>
-      _manager.asyncRunTask(taskRunner);
+      _manager.asyncRunTask(taskRunner, label: label);
 
   @override
   OnError? onError;
