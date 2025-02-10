@@ -33,6 +33,9 @@ class _AsyncTaskHookState extends HookState<AsyncTaskHook, _AsyncTaskHook>
       FutureTaskManager(showErrorDialog: (ErrorDetails error) {
     (onError ?? AsyncTaskHook.defaultShowErrorDialog)(context, error);
   }, onChanged: (FutureTask? task) {
+    if (!context.mounted) {
+      return;
+    }
     setState(() {});
   });
 
@@ -52,6 +55,11 @@ class _AsyncTaskHookState extends HookState<AsyncTaskHook, _AsyncTaskHook>
       Future<U> Function(TaskProgress progress) progress) {
     return _manager.asyncTaskCallback(progress);
   }
+
+  Future<U> asyncRunTask<U>(
+          Future<U> Function(TaskProgress progress) taskRunner,
+          {String? label}) =>
+      _manager.asyncRunTask(taskRunner);
 
   @override
   OnError? onError;
